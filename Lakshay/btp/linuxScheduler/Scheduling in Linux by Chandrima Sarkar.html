@@ -1,0 +1,781 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+  <meta name="generator" content="HTML Tidy for Linux/x86 (vers 1 September 2005), see www.w3.org">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title>Scheduling in Linux by Chandrima Sarkar</title>
+  <link href="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/style.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+<!--
+.style2 {color: #cc0000}
+.style3 {font-size: 24px}
+.style4 {color: #cc0000; font-size: 24px; }
+.style5 {font-size: 14px}
+.style12 {font-size: 16px}
+.style13 {font-size: 16px; font-weight: bold; color: #990066; }
+.style14 {
+	font-size: 16;
+	font-weight: bold;
+	color: #990033;
+}
+.style15 {
+	color: #990033;
+	font-weight: bold;
+}
+.style16 {font-size: 14px; font-weight: bold; }
+.style17 {font-size: 14px; font-weight: bold; color: #000000; }
+.style18 {
+	color: #993300;
+	font-weight: bold;
+}
+.style20 {
+	font-size: medium;
+	font-weight: bold;
+}
+.style22 {font-size: 24px; color: #006633;}
+.style23 {font-size: 14px; font-weight: bold; color: #990033; }
+-->
+  </style>
+</head>
+
+<body>
+<div id="container">
+<div id="header">
+	<p>&nbsp;</p>
+	<div id="studentname">
+      <h1>Scheduling in Linux </h1>
+      <p>Project CSCI 560 </p>
+      <p>&nbsp;</p>
+      <br>
+	</div>
+  </div>
+<!-- end header -->
+
+    <div id="left">
+      <h3><strong>Contents</strong></h3>
+
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#A">Abstract</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#B">Introduction</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#C">Kernel 2.4 - Major Features</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#D">Kernel 2.6 - Major Features </a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#E">Concrete view of Linux Kernel Scheduler</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#F">Linux Source Code Information</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#G">Project Description / Challenges</a> </strong><strong></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#H">How to Configure and Build a Linux Kernel</a> </strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#I">Linux Scheduler Implementation </a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#J">Summary of the Project</a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#K">Conclusion and future work </a></strong></p>
+      <p><strong><a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#L">References</a></strong></p>
+      <p>&nbsp;</p>
+      <p>&nbsp; </p>
+      <p>&nbsp;</p>
+      <h3>&nbsp;</h3>
+
+      <p><a ref=""></a><br>
+			<a ref=""></a><br>
+			<a ref=""></a><br>
+	  <a ref=""></a></p>
+    </div>
+    <!-- end left division -->
+
+    <div id="main">
+		      <h3 class="style3"><a name="A" class="namedAnchor style8">Abstract,</a></h3>
+
+              <p class="style5" align="justify">The main purpose of the project <strong>Scheduling in Linux </strong>is
+  adding a scheduling policy to the Linux Kernel 2.4. It also aims at 
+providing a clear yet concrete oversiew of the scheduling process in 
+Linux. We will start out presentation with a detailed introduction 
+followed by some basic yet important questions regarding , how the 
+schedular works , the code implementation and important algorithms. We 
+will also present an overview of how a linux kernel can be compiled and 
+configured. </p>
+              <h3 class="style3"><a name="B" class="namedAnchor style8">Introduction</a></h3>
+              <p class="style5">The Linux scheduler is a priority based 
+scheduler that schedules tasks    based upon their static and dynamic 
+priorities.  When these priorities    are combined they form a task's <em>goodness</em> .  Each time the Linux    scheduler runs, every task on the run queue is examined and its <em>goodness</em> value is computed.  The task with the highest <em>goodness</em> is chosen to run next.  </p>
+              <p class="style5"> When there are cpu bound tasks running 
+in the system, the    Linux scheduler may not be called for intervals of
+ up to .40 seconds.    This means that the currently running task has 
+the CPU to itself for    periods of up to .40 seconds (how long depends 
+upon the task's    priority and whether it blocks or not).  This is good
+ for throughput    because there are few computationally uneccessary 
+context switches.    However it can kill interactivity because Linux 
+only reschedules when    a task blocks or when the task's dynamic 
+priority (counter)    reaches zero. Thus under Linux's  default priority
+ based scheduling    method, long scheduling latencies can occur. </p>
+              <p class="style5"> Looking at the scheduling latency in 
+finer detail, the Linux scheduler    makes use of a timer that 
+interrupts every 10 msec.  This timer erodes    the currently running 
+task's dynamic priority (decrements its    counter).  A task's counter 
+starts out at the same    value its priority contains.  Once its dynamic
+ priority    (counter) has eroded to 0 it is again reset to that of its 
+   static priority (priority).  It is only after the    counter reaches 0
+ that a call to schedule() is made.    Thus a task with the default 
+priority of 20 may run for .200 secs (200    msecs) before any other 
+task in the system gets a chance to run.  A    task at priority 40 (the 
+highest priority allowed) can run for .400    secs without any 
+scheduling occurring as long as it doesn't block or    yield. </p>
+              <p align="justify"> <span class="style5">Linux scheduler has been gone through some big improvements since kernel version 2.4. There  were a lot of complaints about the <a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/index.html#A">interactivity</a>
+ of the scheduler in kernel 2.4. During this  version, the scheduler was
+ implemented with one running queue for all available processors. At  
+every scheduling, this queue was locked and every task on this queue got
+ its timeslice update.  This implementation caused poor performance in 
+all aspects. The scheduler algorithm and  supporting code went through a
+ large rewrite early in the 2.5 kernel development series. The new  
+scheduler was arisen to achieveO(1 ) run-time regardless number of 
+runnable tasks in the  system. To achieve this, each processor has its 
+own running queue. This helps a lot in reducing  lock contention. The 
+priority array was introduced which used active array and expired array 
+to  keep track running tasks in the system. TheO(1 ) running time is 
+primarily drawn from this new  data structure. The scheduler puts all 
+expired processes into expired array. When there is no  active process 
+available in active array, it swaps active array with expired array, 
+which makes  active array becomes expired array and expired array 
+becomes active array. There were some  twists made into this scheduler 
+to optimize further by putting expired task back to active array  
+instead of expired array in some cases.O(1 ) scheduler uses a heuristic 
+calculation to update  dynamic priority of tasks based on their 
+interactivity (I/O bound versus CPU bound) The  industry was happy with 
+this new scheduler until Con Kolivas introduced his new scheduler  named
+ Rotating Staircase Deadline (RSDL) and then later Staircase Deadline 
+(SD). His new  schedulers proved the fact that fair scheduling among 
+processes can be achieved without any  complex computation. His 
+scheduler was designed to run inO(n ) but its performance exceeded  the 
+currentO(1 ) scheduler. </span></p>
+              <p class="style5" align="justify"> The result achieved 
+from SD scheduler surprised all kernel developers and designers. The 
+fair  scheduling approach in SD scheduler encouraged Igno Molnar to 
+re-implement the new Linux  scheduler named Completely Fair Scheduler 
+(CFS). CFS scheduler was a big improvement over  the existing scheduler 
+not only in its performance and interactivity but also in simplifying 
+the  scheduling logic and putting more modularized code into the 
+scheduler. CFS scheduler was  merged into mainline version 2.6.23. Since
+ then, there have been some minor improvements  made to CFS scheduler in
+ some areas such as optimization, load balancing and group scheduling  
+feature. </p>
+              <p class="style5" align="justify">&nbsp;</p>
+              <p class="style4"><a name="C" class="namedAnchor style8">Kernel 2.4 Major Features</a></p>
+              <p class="style4">&nbsp;</p>
+              <div class="style5">
+                <ul>
+                  <li>
+                    <p>An O(n) scheduler - Goes through  the entire “ 
+global runqueue” to determine the next task to  be run. This is an O(n) 
+algorithm where 'n' is the number of processes. The  time taken was 
+proportional to the number of active processes in the system</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ul>
+                  <li>
+                    <p>A Global  runqueue - All CPUs had to wait for 
+other CPUs to  finish execution. A Global runqueue for all  processors 
+in a symmetric multiprocessing system (SMP). This meant a task could  be
+ scheduled on any processor -- which can be good for load balancing but 
+bad  for memory caches. For example, suppose a task executed on CPU-1, 
+and its data  was in that processor's cache. If the task got rescheduled
+ to CPU-2, its data  would need to be invalidated in CPU-1 and brought 
+into CPU-2 .</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ul>
+                  <li>
+                    <p>This lead to large performance  hits during heavy workload</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <p><strong>Kernel 2.4 Scheduler  Policies:</strong></p>
+                <ul>
+                  <li>
+                    <p> SCHED_FIFO - A First-In,  First-Out real-time 
+process. When the scheduler assigns the CPU to the  process, it leaves 
+the process descriptor in its current position in the runqueue list. If 
+no other  higher-priority realtime process is runnable, the process will
+ continue to  use the CPU as long as it wishes, even if other real-time 
+processes having the  same priority are runnable</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ul>
+                  <li>
+                    <p>SCHED_RR - A Round Robin  real-time process. When
+ the scheduler assigns the CPU to the  process, it puts the process 
+descriptor at the end of the runqueue list. This policy ensures a fair  
+assignment of CPU time to all SCHED_RR real-time processes that have the
+ same  priority</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ul>
+                  <li>
+                    <p>SCHED_OTHER - A conventional,  time-shared 
+process. The policy field also encodes a SCHED_YIELD  binary flag. This 
+flag is set when the process invokes the sched_ yield( ) system call (a 
+way of  voluntarily relinquishing the processor without the need to 
+start an I/O  operation or go to sleep. The scheduler puts the process 
+descriptor at the  bottom of the runqueue list.</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <p><strong>O(1) Algorithm ( Constant  time algorithm )</strong></p>
+                <ul>
+                  <li>
+                    <p>Choose the task on the highest priority list  to execute</p>
+                  </li>
+                  <li>
+                    <p>To make this process more efficient, a  bitmap is used to define when tasks are on a given priority list</p>
+                  </li>
+                  <li>
+                    <p>On most architectures, a find-first-bit-set  
+instruction is used to find the highest priority bit set in one of five 
+32-bit  words (for the 140 priorities</p>
+                  </li>
+                  <li>
+                    <p>The time it takes to find a task to execute  depends not on the number of active tasks but instead on the number of  priorities</p>
+                  </li>
+                  <li>
+                    <p>This makes the 2.6 scheduler an O(1) process  
+because the time to schedule is both fixed and deterministic regardless 
+of the  number of active tasks</p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+              </div>
+              <p class="style4"><a name="D" class="namedAnchor style8">Kernel 2.6 - Major Features </a></p>
+              <p class="style4">&nbsp;</p>
+              <ul>
+                <li class="style5">
+                  <p>The 2.6  scheduler was designed and implemented by 
+Ingo Molnar. His motivation in  working on the new scheduler was to 
+create a completely O(1) scheduler for  wakeup, context-switch, and 
+timer interrupt overhead</p>
+                </li>
+                <li class="style5">
+                  <p>One of the  issues that triggered the need for a 
+new scheduler was the use of Java virtual  machines (JVMs). The Java 
+programming model uses many threads of execution,  which results in lots
+ of overhead for scheduling in an O(n) scheduler</p>
+                </li>
+                <li class="style5">
+                  <p>Each CPU has a runqueue made up of 140  priority 
+lists that are serviced in FIFO order. Tasks that are scheduled to  
+execute are added to the end of their respective runqueue's priority 
+list</p>
+                </li>
+                <li class="style5">
+                  <p>Each task has a  time slice that determines how much time it's permitted to execute</p>
+                </li>
+                <li class="style5">
+                  <p>The first  100 priority lists of the runqueue are  
+reserved for real-time tasks, and the last 40 are used for user tasks  
+(MAX_RT_PRIO=100 and MAX_PRIO=140)</p>
+                </li>
+                <li class="style5">
+                  <p>In addition to the CPU's runqueue, which is  called the active runqueue, there's also  an expired runqueue </p>
+                </li>
+                <li class="style5">
+                  <p>When a task on the active runqueue uses all of its 
+ time slice, it's moved to the expired runqueue. During the  move, its 
+time slice is recalculated (and so is its priority)</p>
+                </li>
+                <li class="style5">
+                  <p>If no tasks exist on the active runqueue for a 
+given  priority, the pointers for the active and expired runqueues are 
+swapped,  thus making the expired priority list the active one</p>
+                </li>
+              </ul>
+              <p><img src="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/6.png" alt="Scheduler" height="300" width="572"></p>
+              <p>&nbsp;</p>
+              <p class="style16">Kernel 2.6 Scheduler  Policies:</p>
+      <ul>
+        <li class="style5">SCHED_NORMAL - A conventional, time-shared process (used to  be called SCHED_OTHER), for normal tasks</li>
+      </ul>
+              <ol>
+                <li class="style5">Each task assigned a “Nice” value</li>
+                <li class="style5">PRIO =  MAX_RT_PRIO + NICE + 20 </li>
+                <li class="style5">Assigned a time slice</li>
+                <li class="style5">Tasks at the same prio(rity) are round-robined</li>
+                <li class="style5">Ensures Priority + Fairness</li>
+              </ol>
+              <p>&nbsp;</p>
+              <ul>
+                <li class="style5">SCHED_FIFO - A First-In, First-Out real-time process </li>
+              </ul>
+              <ol>
+                <li class="style5">Run until they relinquish  the CPU voluntarily</li>
+                <li class="style5">Priority levels maintained</li>
+                <li class="style5">Not pre-empted !!</li>
+              </ol>
+              <p>&nbsp;</p>
+              <ul>
+                <li class="style5">SCHED_RR - A Round Robin real-time  process </li>
+              </ul>
+              <ol>
+                <li class="style5">Assigned a timeslice  and run till the timeslice is exhausted.</li>
+                <li class="style5">Once all RR tasks of a  given 
+prio(rity)  level exhaust their timeslices, their timeslices are 
+refilled and they continue running</li>
+                <li class="style5">Prio(rity) levels are maintained</li>
+              </ol>
+              <p>&nbsp;</p>
+              <ul>
+                <li class="style5">SCHED_BATCH - for "batch" style execution of processes </li>
+              </ul>
+              <ol>
+                <li class="style5"> For computing-intensive tasks</li>
+                <li class="style5"> Timeslices are long and processes are round robin scheduled </li>
+                <li class="style5">lowest priority tasks are batch-processed (nice +19)<br>
+                </li>
+              </ol>
+              <p>&nbsp;</p>
+              <ul>
+                <li class="style5">SCHED_IDLE - for  running very low priority background job </li>
+              </ul>
+              <ol>
+                <li class="style5">nice value has no influence for this policy</li>
+                <li class="style5">extremely low priority (lower than +19 nice)</li>
+              </ol>
+              <p>&nbsp;</p>
+              <p class="style16">Completely Fair Scheduler (CFS)</p>
+              <ul>
+                <li class="style5">
+                  <p>The main idea behind the CFS is to maintain balance
+ (fairness) in providing                  processor time to tasks. This 
+means processes should be given a fair                  amount of the 
+processor. When the time for tasks is out of balance                  
+(meaning that one or more tasks are not given a fair amount of time     
+             relative to others), then those out-of-balance tasks should
+ be given time                  to execute. </p>
+                  <p>To determine the balance, the CFS maintains the amount of time provided to                  a given task in what's called the <em>virtual runtime.</em>
+ The smaller a                  task's virtual runtime—meaning the 
+smaller amount of time a task                  has been permitted access
+ to the processor—the higher its need for                  the 
+processor. The CFS also includes the concept of sleeper fairness to     
+             ensure that tasks that are not currently runnable (for 
+example, waiting                  for I/O) receive a comparable share of
+ the processor when they eventually                  need it. </p>
+                  <p>But rather than maintain the tasks in a run queue, 
+as has been done in                  prior Linux schedulers, the CFS 
+maintains a time-ordered red-black tree                  (see Figure 
+below). A <em>red-black tree</em> is a tree with a couple of            
+      interesting and useful properties. First, it's self-balancing, 
+which means                  that no path in the tree will ever be more 
+than twice as long as any                  other. Second, operations on 
+the tree occur in O(log <em>n</em>) time (where <em>n</em> is the number of nodes in the tree). This means that you can                  insert or delete a task quickly and efficiently. </p>
+                </li>
+              </ul>
+              <p><img src="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/cfsTREE.png" alt="cfs" height="304" width="476"></p>
+              <p class="style5" align="justify">&nbsp;</p>
+              <h3 class="style3"><a name="E" class="namedAnchor style8">Concrete view of Linux Kernel Scheduler</a></h3>
+              <p class="style5">For a general overview of the features of linux scheduers click <a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/SchedulingLinux/index.html">here -&gt; </a></p>
+              <p class="style5">Overview ( typical Kernel 2.6 Scheduler  ) </p>
+              <p class="style5"><img src="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/fig1.jpg" alt="kernel2.6Schedular" height="396" width="536"></p>
+              <p class="style5">&nbsp;</p>
+              <p class="style12">Linux scheduler contains:</p>
+              <div class="style5" align="justify">
+                <ul>
+                  <li>
+                    <p class="style5"><strong>A Running Queue :</strong>
+ A running queue (rq) is created for each processor (CPU). It is defined
+                    in kernel/sched.c as struct _runqueue. Each rq 
+contains a list of runnable processes on a  given processor. 
+Thestruct_runqueue is defined in sched.c notsched.h to abstract the  
+internal data structure of the scheduler.                     </p>
+                  </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ul>
+                  <li class="style5">                    <strong>Schedule Class : </strong>schedule
+ class was introduced in 2.6.23. It is an extensible hierarchy of 
+scheduler modules. These modules encapsulate scheduling policy details 
+and are called  from the scheduler core without the core code assuming 
+too much about them.  Scheduling classes are implemented through 
+thesched_class structure, which contains  hooks to functions that must 
+be called whenever an interesting event occurs. Tasks refer  to their 
+schedule policy through struct task_struct and sched_class. There are 
+two schedule  classes implemented in 2.6.32: </li>
+                </ul>
+                <p>&nbsp;</p>
+                <ol>
+                  <li><span class="style14">Completely Fair Schedule class:</span> schedules tasks following Completely Fair Scheduler (CFS) algorithm. Tasks which have policy set to SCHED_ NORMA L 
+                    (SCHED_OTHER), SCHED_BATCH, SCHED_IDLE are scheduled by this 
+                    schedule class. The implementation of this class is in kernel /sched_fai r.c </li>
+                  <li><span class="style15">RT schedule class:</span> 
+schedules tasks following real-time mechanism defined in  POSIX 
+standard. Tasks which have policy set to SCHED_FIFO, SCHED_RR are  
+scheduled using this schedule class. The implementation of this class is
+ kernel/sched_rt.c </li>
+                </ol>
+                <p>&nbsp;</p>
+                <ul>
+                  <li><strong>Load balancer:</strong> In SMP 
+environment, each CPU has its own rq. These queues might be unbalanced 
+from time to time. A running queue with empty task pushes its associated
+  CPU to idle, which does not take full advantage of symmetric 
+multiprocessor systems.  Load balancer is to address this issue. It is 
+called every time the system requires  scheduling tasks. If running 
+queues are unbalanced, load balancer will try to pull idle  tasks from 
+busiest processors to idle processor. </li>
+                </ul>
+                <blockquote>&nbsp;</blockquote>
+              </div>
+              <p class="style23"><a name="A" class="namedAnchor style8">Interactivity</a></p>
+              <p class="style5" align="justify">Interactivity is an important goal for the Linux scheduler, especially given the 
+                growing effort to optimize Linux for desktop environments. Interactivity often 
+                flies in the face of efficiency, but it is very important nonetheless. An example of 
+                interactivity might be a keystroke or mouse click. Such events usually require a 
+                quick response (i.e. the thread handling them should be allowed to execute very 
+                soon) because users will probably notice and be annoyed if they do not see some 
+                result from their action almost immediately. Users don’t expect a quick response 
+                when, for example, they are compiling programs or rendering high-resolution 
+                images. They are unlikely to notice if something like compiling the Linux kernel 
+                takes an extra twenty seconds. Schedulers used for interactive computing should  
+                be designed in such a way that they respond to user interaction within a certain 
+                time period. Ideally, this should be a time period that is imperceptible to users 
+              and thus gives the impression of an immediate response.</p>
+              <p class="style23" align="justify">Interactivity estimator</p>
+              <div align="justify">
+                <ul>
+                  <li class="style5">
+                    <p> Dynamically scales a tasks priority based on it's interactivity </p>
+                  </li>
+                  <li class="style5">
+                    <p> Interactive tasks receive a prio bonus </p>
+                  </li>
+                  <li class="style5">
+                    <p> Hence a larger timeslice</p>
+                  </li>
+                  <li class="style5">
+                    <p>CPU bound tasks receive a prio penalty </p>
+                  </li>
+                  <li class="style5">
+                    <p> Interactivity estimated using a running sleep average.</p>
+                  </li>
+                  <li class="style5">
+                    <p> Interactive tasks are I/O bound. They wait for events to occur.</p>
+                  </li>
+                  <li class="style5">
+                    <p> Sleeping tasks are I/O bound or interactive !!</p>
+                  </li>
+                  <li class="style5">
+                    <p> Actual bonus/penalty is determined by comparing the sleep average against a constant maximum sleep average.</p>
+                  </li>
+                  <li class="style5">
+                    <p> Does not apply to RT tasks</p>
+                  </li>
+                </ul>
+              </div>
+              <p class="style15" align="justify">When a task finishes it's timeslice :</p>
+              <div align="justify">
+                <ul>
+                  <li class="style5">
+                    <p> It's interactivity is estimated</p>
+                  </li>
+                  <li class="style5">
+                    <p> Interactive tasks can be inserted into the 'Active' array again</p>
+                  </li>
+                  <li class="style5">
+                    <p> Else, priority is recalculated</p>
+                  </li>
+                  <li class="style5">
+                    <p> Inserted into the NEW priority level in the 'Expired' array</p>
+                  </li>
+                </ul>
+              </div>
+              <p class="style15" align="justify"><strong> Re-inserting interactive tasks</strong></p>
+              <div align="justify">
+                <ul>
+                  <li class="style5">
+                    <p>To avoid delays, interactive tasks may be re-inserted into the 'active' array after their timeslice has expired</p>
+                  </li>
+                  <li class="style5">
+                    <p> Done only if tasks in the 'expired' array have run recently</p>
+                  </li>
+                  <li class="style5">
+                    <p> Done to prevent starvation of tasks</p>
+                  </li>
+                  <li class="style5">
+                    <p> Decision to re-insert depends on the task's priority level</p>
+                  </li>
+                </ul>
+              </div>
+              <p class="style15" align="justify">Timeslice distribution:</p>
+              <div align="justify">
+                <ul>
+                  <li class="style5">
+                    <p>Priority is recalculated only after expiring a timeslice </p>
+                  </li>
+                  <li class="style5">
+                    <p> Interactive tasks may become non-interactive during their LARGE timeslices, thus starving other processes</p>
+                  </li>
+                  <li class="style5">
+                    <p> To prevent this, time-slices are divided into chunks of 20ms</p>
+                  </li>
+                  <li class="style5">
+                    <p> A task of equal priority may preempt the running task every 20ms</p>
+                  </li>
+                  <li class="style5">
+                    <p> The preempted task is requeued and is round-robined in it's priority level.</p>
+                  </li>
+                  <li>
+                    <p><span class="style5"> Also, priority recalculation happens every 20ms</span><br>
+                    </p>
+                  </li>
+                </ul>
+              </div>
+              <ul>
+              </ul>
+              <p class="style5" align="justify">&nbsp;</p>
+      <p class="style5" align="justify"><span class="style3"><strong>Benchmark</strong> -</span> Hackbench Performance Runs </p>
+      <p class="style5" align="justify">Performance tests were conducted
+ using a test program called hackbench.  The tests were run to compare 
+Linux 2.4.18 against the 2.6.0-test9  kernel.</p>
+      <h3 class="style17"> What is hackbench? </h3>
+      <p class="style5"> The hackbench test is a benchmark for measuring
+ the performance, overhead, and  scalability of the Linux scheduler. 
+Created by Rusty Russell, it uses client  and server processes grouped 
+to send and receive data in order to simulate  the connections 
+established for a chat room.  Each client sends a message to  each 
+server in the group. </p>
+      <p class="style5">The test creates a group of processes in 
+multiples set by the user (for this  report, they were set in multiples 
+of 25). Each client/server pair listens on a  socket; the writer writes 
+100 messages to each socket and the receiver   listens on the socket. 
+Therefore in this case, the total number of messages  sent are 100 X the
+ number of processes specified.  The source for the test  file is <a href="http://devresources.linuxfoundation.org/craiger/hackbench/src/hackbench.c">hackbench.c</a>&nbsp;  and is called from a wrapper perl script which is executed in <a href="http://www.osdl.org/lab_activities/kernel_testing/stp/"> OSDL's Scalable Test Platform.</a> &nbsp;  The wrapper script is <a href="http://devresources.linuxfoundation.org/craiger/hackbench/src/runit_pl.txt">runit.pl</a></p>
+      <p class="style16">Results of the Runs </p>
+      <p class="style5"> Each individual test runs a multiple of 25 
+processes, increments to the  next multiple and reruns the benchmark.  
+This continues until a max level,  set by the tester, is achieved.  </p>
+      <p><img src="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/2.png" alt="1" height="484" width="644"></p>
+      <p class="style5" align="justify">&nbsp;</p>
+<p class="style5" align="justify"><img src="Scheduling%20in%20Linux%20by%20Chandrima%20Sarkar_files/3.png" alt="2" height="484" width="644"><br>
+      </p>
+              <p class="style4"><a name="F" class="namedAnchor style8">Linux Source Code Information</a></p>
+              <p class="style4">&nbsp;</p>
+              <p class="style5">Source Code for almost al versions of Linux are available from - &gt; <a href="http://kernel.org/">Kernel.org</a></p>
+              <p class="style5">&nbsp;</p>
+              <p class="style4"><a name="G" class="namedAnchor style8">Project Description / Challenges</a></p>
+              <p class="style13">IDEA :</p>
+              <ul>
+                <li class="style5">
+                  <p>Implement  a new scheduling policy </p>
+                </li>
+                <li class="style5">
+                  <p>The new  policy should schedule processes in the background.</p>
+                </li>
+              </ul>
+              <p class="style13">CHALLENGES</p>
+              <ul>
+                <li class="style5">
+                  <p>SCHED_IDLE  already does this.</p>
+                </li>
+                <li class="style5">
+                  <p>Policy  should schedule process in a lower priority than SCHED_IDLE</p>
+                </li>
+                <li class="style5">
+                  <p>Interprete the change in the scheduling policy through the process runtime </p>
+                </li>
+                <li class="style5">
+                  <p>Kernel  2.6 scheduler is considerably different than in Kernel 2.4</p>
+                </li>
+              </ul>
+              <p>&nbsp;</p>
+              <p class="style4"><a name="H" class="namedAnchor style8">How to Configure and Build a Linux Kernel</a> </p>
+              <p class="style4">&nbsp;</p>
+              <p class="style20">Step 1 : Get the necessary requirements for Building and Using the Kernel</p>
+              <p>Only  three packages that are absoulutely necessary for successfully building a kernel:</p>
+              <p><span class="style5"><strong>Compiler</strong>  : To build the kernel, the gcc C  compiler must be used. Most Linux distributions have a package entitiled <em>gcc </em>that should be  installed. If you wish to download the compiler and build it yourself, you can  find it at <em>http://gcc.gnu.org.</em>As of the 2.6.18 kernel release, the 3.2 version of <em>gcc </em>is the oldest that can  properly build a working kernel.&nbsp; </span><br>
+              <span class="style18">$ gcc –version</span></p>
+              <p><strong class="style5">Linker : </strong><span class="style5">The C compiler, <em>gcc</em>, does not do all of the  compiling on its own. It needs an additional set of tools known as <em>binutils </em>to do the  linking and assembling of source files. The <em>binutils </em>package
+ also contains useful  utilities that can manipulate object files in 
+lots of useful ways, such as to  view the contents of a library. As of 
+the 2.6.18 kernel  release, the 2.12 release of <em>binutils </em>is the oldest that can successfully link the kernel.</span><br>
+                <span class="style18">$ <strong>ld –v</strong></span></p>
+              <p><span class="style5"><strong>Make:&nbsp;&nbsp;</strong> <em>make </em>is
+ a tool that walks the  kernel source tree to determine which files need
+ to be compiled, and then calls  the compiler and other build tools to 
+do the work in building the kernel. As of the 2.6.18 kernel release, the
+ 3.79.1 release of <em>make </em>is the oldest that can  properly build the kernel. It is recommended that you install the latest  stable&nbsp; version of <em>make.</em></span><br>
+                <span class="style18">$ <strong>make –version</strong></span></p>
+              <p><strong class="style5">Other packages :</strong><br>
+                <span class="style5">util-linux , 
+                Filesystem-Specific Tools&nbsp;  util packages – JFS , ReiserFS , XFS , Quota , NFS</span>, Udev , process tools – procps package , PCMCIA tools </p>
+              <p>&nbsp;</p>
+              <p class="style20">Step 2 : Retrieving the Kernel Source</p>
+              <p class="style5">Visit <a href="http://kernel.org/">http://kernel.org/</a> and download   the latest source code. It is also possible to download the kernel source from the command line, using 
+              the wget or curl utilities, both ofwhich should come with your Linux distribution.</p>
+              <p class="style18">$ wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.8.tar.gz</p>
+              <p class="style5">or</p>
+              <p class="style18">$ curl http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.8.tar.gz \ 
+              -o linux-2.6.17.8.tar.gz</p>
+              <p class="style5">&nbsp;</p>
+              <p class="style16">Step 3 : Configuring and Building</p>
+              <p class="style5">The most basic method of configuring a kernel is to use the make config method :</p>
+              <p class="style18">$ cd linux-2.6.17.8</p>
+              <p class="style18">$ make config </p>
+              <p class="style5">default configuration Option :</p>
+              <p class="style18">                $ make defconfig </p>
+              <p class="style5">Modifying the configuration :The menuconfig way of configuring a kernel is a console-based program that offers 
+                a way to move around the kernel configuration using the arrow keys on the<br>
+              keyboard. There are three ways of doing so -</p>
+              <ul>
+                <li><strong> menuconfig</strong> -  Text based color 
+menus, radiolists &amp;   dialogs. This option also useful on remote 
+server if you wanna compile   kernel remotely. </li>
+                <li><strong> xconfig</strong> -  X windows (Qt) based configuration tool, works best under KDE desktop</li>
+                <li><strong>gconfig</strong> -  X windows (Gtk) based configuration tool, works best under Gnome </li>
+              </ul>
+              <p class="style18">$ make menuconfig</p>
+              <p class="style18">&nbsp;</p>
+              <p class="style16">Step 4: Compiling/Building The Kernel</p>
+              <p class="style18">$ make</p>
+              <p class="style5">Start compiling to kernel modules:</p>
+              <p class="style18">$ make modules</p>
+              <p class="style5">Install kernel modules  (become a root user, use su command):</p>
+              <p class="style18">$ sudo make modules_install  </p>
+              <p class="style5">After the modules have been successfully installed, the main kernel image must be<br>
+              installed: </p>
+              <p class="style18">$ make install </p>
+              <p>It will install three files into /boot directory as well as modification to your kernel grub configuration file:</p>
+              <ul>
+                <li>System.map-2.617.8</li>
+                <li>config-2.617.8</li>
+                <li>vmlinuz-2.617.8</li>
+                <li></li>
+              </ul>
+              <h2>Create an initrd image</h2>
+              <p>Type the following command at a shell prompt:              </p>
+              <p class="style18">$ cd /boot</p>
+              <p class="style18">$ mkinitrd -o initrd.image -2.617.8</p>
+              <p class="style16">Step 5:  Installing and Booting from a Kernel </p>
+              <p class="style5">Modifying the Bootloader for the New kernel  </p>
+              <p class="style5">There are two common Linux kernel 
+bootloaders: GRUB and LILO.To determine which bootloader your system 
+uses, look in the /boot/ directory. If 
+                there is a grub subdirectory:<br>
+                <span class="style18">$ ls -F /boot | grep grub</span></p>
+              <p class="style5">will give <br>
+              grub/</p>
+              <p class="style5">If this directory is not 
+                present, look for the presence of the /etc/lilo.conf file:<br>
+              <span class="style18">$ ls /etc/lilo.conf</span></p>
+              <p class="style5"><span class="style5">should give </span></p>
+              <p class="style5"><span class="style18">              /etc/lilo.conf</span></p>
+              <p class="style5">                If this is present, you are using the LILO program to boot with.</p>
+              <p class="style5">To let GRUB know that a new kernel is present, all you need to do is modify the 
+                /boot/grub/menu.lst file. For full details on the structure of this file, and all of the 
+              different options available, please see the GRUB info pages:</p>
+              <p class="style18">                $ info grub</p>
+              <p class="style5">or </p>
+              <p class="style18">$ man lilo </p>
+              <p class="style16">Step 6 : Modify grub configuration files - /boot/grub/menu.lst</p>
+              <p class="style18">$ update -grub </p>
+              <p class="style16">The last step is to Reboot computer and boot into your new kernel</p>
+              <p class="style22">Enjoy !</p>
+              <p class="style4">&nbsp;</p>
+              <p class="style4"><a name="I" class="namedAnchor style8">Linux Scheduler Implementation </a> </p>
+              <p class="style4">&nbsp;</p>
+              <p class="style16">Kernel Files modified :</p>
+              <p class="style5">sched.c , sched.h  ( see the attached files here -&gt; ) </p>
+              <p class="style16">Important Modifications :</p>
+              <ul>
+                <li>A new scheduler policy implemented - Sched_CS</li>
+                <li>Sched_CS has beed given a static lower probability than Sched_IDLE </li>
+              </ul>
+              <p class="style16">Probable Evaluation Technique for the new scheduler</p>
+              <p class="style5" align="justify">A CPU intensive program 
+called counter can be used which counts a large number of random 
+numbers. counter can be used to check how does it performs with the new 
+scheduler process and can be compared with the previous scheduled 
+processes. </p>
+              <p class="style4">&nbsp; </p>
+              <p class="style4"><a name="J" class="namedAnchor style8">Summary of the Project</a></p>
+              <p class="style5">At first we gave an indept overview of 
+the scheduler in general. Then we discuss in detail the recently used 
+scheduling policies. We also documented the Kernel features for both 2.4
+ and 2.6 version , so that the readers can distinguish between the old 
+version and the new version of the kernel and guess the 
+developement/updates in this area. We then give a general oversview of 
+scheduler process. We also provide the readers with a benchmark system 
+called Hackbench Benchmark System. The results of the commonly performed
+ test of this benckmark is also discussed. </p>
+              <p class="style5"> Then we go over to discuss one most 
+important information for the readers - how to configure and compile a 
+kernel. We first provide with a step by step procedure which can even be
+ used by a naive reader. Then we discuss how the sheduler module can be 
+changed / modified for implemeting a new scheduler policy. We also 
+discuss a probable evaluation technique for the implementation of the 
+new scheduler policy. At last we give the summary of the project and 
+discuss the conclusion and future work of this project.</p>
+              <p class="style5">References are also provided for the benifit of the readers.</p>
+              <p class="style5">&nbsp; </p>
+              <p class="style4"><a name="K" class="namedAnchor style8">Conclusion and future work </a></p>
+              <p class="style5" align="justify">This project covered 
+most of the important aspects of Linux scheduler 2.4 and 2.6 . Kernel 
+scheduler is one of  the most frequently executed components in Linux 
+system. Hence, it has gained a lot of  attentions from kernel developers
+ who have thrived to put the most optimized algorithms and  codes into 
+the scheduler. Different algorithms used in kernel scheduler were 
+discussed in the  project. CFS scheduler achieves a good performance and
+ responsiveness while being relatively  simple compared with the 
+previous algorithm like O(1). CFS exceeds performance expectation in 
+some  workloads. But it still shows some weakness in other workloads. 
+There are some complaints  about irresponsiveness of CFS scheduler in 3D
+ game area.</p>
+              <p class="style5" align="justify">The future work includes
+ delving deeper in to the scheduling and process codes in a way so that 
+we can implement a new scheduling algorithm in the kernel. Though this 
+project gives a vivid overview and basic steps of configuring and 
+compiling kernel, implementing scheduling policy like the SCHED_IDLE 
+(with a lower priority) , there were some challenges associated with it.
+ One of the challenges were interpreting the change in the scheduling 
+policy through the process runtime. The goal for the future is to such 
+challenges and develope efficient techniques for kernel scheduling. </p>
+              <div id="page16"><div><div><div></div>
+                  </div>
+                </div>
+      </div>
+              <p class="style4">&nbsp;</p>
+              <p class="style4"><a name="L" class="namedAnchor style8">References </a> </p>
+              <p class="style5">[1]<a href="http://www.kroah.com/lkn"> http://www.kroah.com/lkn/</a></p>
+              <p class="style5"> [1] A STUDY ON LINUX 
+                KERNEL SCHEDULER 
+      Version 2.6.32 Author: Thang Minh Le </p>
+              <p class="style5">[3] Multiprocessing with the Completely Fair 
+                Scheduler . 
+                Introducing the CFS for Linux.  by <br>
+              Avinesh Kumar</p>
+              <p class="style5">[4] Linux Scheduler Latencyby 
+              Clark Williams, Red Hat, Inc.</p>
+              <p class="style5">[5] <a href="http://www.kernel.org/">kernel.org</a></p>
+              <p class="style5">[6] Enhancing Linux Scheduler Scalability by 
+              Mike Kravetz </p>
+              <p class="style5">[7] Scheduler Activations: Effective Kernel 
+                Support for the User-Level Management of 
+              Parallelism by THOMAS E. ANDERSON, BRIAN N. BERSHAD, EDWARD D. 
+              LAZOWSKA, and HENRY M. LEVY</p>
+              <p class="style5">[8]<a href="http://www.cs.montana.edu/%7Echandrima.sarkar/AdvancedOS/CSCI560_Proj_main/linux"> http://lxr.linux.no/+trees</a></p>
+              <p class="style5">[9] Linux kernel in a nutshell -   <a href="http://www.kroah.com/log/">Greg Kroah-Hartman</a>, published by <a href="http://www.oreilly.com/">O'Reilly</a>. </p>
+              <p class="style5">&nbsp;</p>
+              <p class="style5">&nbsp;</p>
+              <p class="style3"></p>
+              <p class="style4">&nbsp;</p>
+              <p class="style2">&nbsp; </p>
+              <p class="style2">&nbsp;</p>
+              <p>&nbsp;</p>
+    </div>
+    <div id="footer">
+      <hr>
+
+      <p class="left">&nbsp;</p>
+
+      <p class="right">&nbsp;</p>
+
+      <p>&nbsp;</p>
+    </div><!-- end footer -->
+</div><!-- end container -->
+
+
+</body></html>

@@ -1,0 +1,560 @@
+
+<!-- saved from url=(0069)https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="Generator" content="Quadralay WebWorks Publisher 3.5.0">
+<meta name="NewFiles" content="DefaultIntermediate">
+<meta name="Title" content=" Writing Java Applications on Oracle8i">
+
+<title> Writing Java Applications on Oracle8i</title>
+
+<link rel="home" href="https://docs.oracle.com/cd/A87860_01/doc/products.htm" title="Library" <link="">
+<link rel="index" href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/index.htm" title="Index">
+<link rel="copyright" href="https://docs.oracle.com/cd/A87860_01/doc/dcommon/html/cpyr.htm" title="Copyright">
+<link rel="up" href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writed.htm" title="Up">
+<link rel="next" href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ11.htm" title="Next">
+<link rel="previous" href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03write9.htm" title="Previous">
+<style type="text/css"></style></head>
+
+<body bgcolor="#ffffff">
+
+<a name="top"></a>
+
+<table cellspacing="0" cellpadding="0" width="100%">
+<tbody><tr>
+<td align="LEFT" valign="TOP"><font face="Helvetica,Arial,sans-serif" color="#00008B"><b>Oracle8<i>i</i> Java Developer's Guide<br>Release 3 (8.1.7)</b><br>Part Number A83728-01</font></td>
+ 
+
+<td valign="BOTTOM" align="RIGHT">
+<table cellspacing="0" cellpadding="0">
+<tbody><tr>
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/products.htm"><img src="./Garbage Collector OS_files/prodicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Library</font></a></td>
+
+
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/index.htm"><img src="./Garbage Collector OS_files/bookicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Product</font></a></td>
+
+
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/toc.htm"><img src="./Garbage Collector OS_files/conticon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Contents</font></a></td>
+
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/index.htm"><img src="./Garbage Collector OS_files/indxicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Index</font></a></td>
+
+</tr>
+</tbody></table>
+</td>
+</tr>
+
+</tbody></table>
+
+
+<hr>
+
+<p>
+<a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03write9.htm"><img src="./Garbage Collector OS_files/larrow.gif" alt="Go to previous page" border="0" height="30" width="40"></a>
+<a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writed.htm"><img src="./Garbage Collector OS_files/uarrow.gif" alt="Go to beginning of chapter" border="0" height="30" width="40"></a>
+<a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ11.htm"><img src="./Garbage Collector OS_files/rarrow.gif" alt="Go to next page" border="0" height="30" width="40"></a>
+
+
+
+
+
+
+</p><div class="IND">
+
+<!-- End Header -->
+
+
+<a name="1014880"></a>
+<!--TOC=h1-"1014880"-->
+<h2 class="H1"><font face="Arial, Helvetica, sans-serif" color="#330099"> Managing Your Operating System Resources</font></h2>
+<!--/TOC=h1-->
+
+<a name="1004761"></a>
+<p class="BP">
+Operating system resources are a limited commodity on any computer. Because Java is targeted at providing a computing platform as well as a programming language, it contains platform-independent classes and frameworks for accessing platform-specific resources. The Java class methods access operating system resources through the JVM. Java has potential problems with this model, because programmers rely on the garbage collector to manage all resources, when all that the garbage collector manages is Java objects, not the operating system resources that the Java object holds on to. 
+</p>
+
+<a name="1007146"></a>
+<p class="BP">
+In addition, because the Aurora JVM is embedded in the database, your operating system resources, which are contained within Java objects, can be invalidated if they are maintained across calls within a session. 
+</p>
+
+<a name="1007152"></a>
+<p class="BP">
+The following sections discusses these potential problems:
+</p>
+
+<ul class="LB1">
+
+<li class="LB1" type="DISC"><a name="1007163"></a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1007156">Overview of Operating System Resources</a>
+<p>
+
+</p></li><li class="LB1" type="DISC"><a name="1007970"></a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1012160">Garbage Collection and Operating System Resources</a>
+<p>
+
+</p></li><li class="LB1" type="DISC"><a name="1007167"></a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1012248">Operating System Resources Affected Across Calls</a>
+<p>
+</p></li></ul>
+
+<a name="1007156"></a>
+<!--TOC=h2-"1007156"-->
+<h3 class="H2"><font face="Arial, Helvetica, sans-serif" color="#330099"> Overview of Operating System Resources</font></h3>
+<!--/TOC=h2-->
+
+<a name="1007248"></a>
+<p class="BP">
+In general, your operating system resources contain the following: 
+</p>
+   
+<a name="1004859">
+</a><p><a name="1004859">
+<table class="Simple" width="100%">
+<tbody><tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1006880"></a>
+<p class="TS">
+memory &nbsp;</p></td>
+<td class="Simple">
+<a name="1006882"></a>
+<p class="TS">
+Aurora manages memory internally, allocating memory as you create new objects and freeing objects as you no longer need them. The language and class libraries do not support a direct means to allocate and free memory. <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/01intro3.htm#1002841">"Automated Storage Management"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/01intro3.htm#1002841"></a> discusses garbage collection.  &nbsp;</p></td>
+</tr>
+<tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1006890"></a>
+<p class="TS">
+files &nbsp;</p></td>
+<td class="Simple">
+<a name="1006892"></a>
+<p class="TS">
+Java contains classes that represent file resources. Instances of these classes hold on to your operating system's file constructs, such as file handles, which can become invalid between calls in a session.  &nbsp;</p></td>
+</tr>
+<tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1006894"></a>
+<p class="TS">
+sockets &nbsp;</p></td>
+<td class="Simple">
+<a name="1006896"></a>
+<p class="TS">
+Java contains classes that represent socket resources. Instances of these classes hold on to socket constructs, some of which can become invalid between calls in a session. See <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1004792">"Sockets"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1004792"></a> for information specific to maintaining sockets across calls. &nbsp;</p></td>
+</tr>
+<tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1006898"></a>
+<p class="TS">
+threads &nbsp;</p></td>
+<td class="Simple">
+<a name="1006900"></a>
+<p class="TS">
+Threads are discouraged within the Aurora JVM because of scalability issues. However, you can have a multi-threaded application within the database. <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ11.htm#1003094">"Threading in JServer"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ11.htm#1003094"></a> discusses in detail the Aurora's JVM threading model. &nbsp;</p></td>
+</tr>
+
+</tbody></table>
+
+<table class="TableNote" width="100%">
+<tbody><tr class="TableNote" align="LEFT" valign="TOP"><td class="TableNote">
+
+</td></tr>
+</tbody></table>
+
+</a>
+   
+<a name="1007186"></a>
+<!--TOC=h3-"1007186"-->
+</p><h4 class="H3"><font face="Arial, Helvetica, sans-serif" color="#330099"> Operating System Resource Access</font></h4>
+<!--/TOC=h3-->
+
+<a name="1007187"></a>
+<p class="BP">
+By default, a Java user does not have direct access to most operating system resources. A system administrator may give permission to a user to access these resources by modifying the JVM security restrictions. The JVM security enforced upon system resources conforms to Java 2 security. See <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/securit2.htm#1004496">"Java 2 Security"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/securit2.htm#1004496"></a> for more information. 
+</p>
+
+<a name="1007196"></a>
+<!--TOC=h3-"1007196"-->
+<h4 class="H3"><font face="Arial, Helvetica, sans-serif" color="#330099"> Operating System Resource Lifetime</font></h4>
+<!--/TOC=h3-->
+
+<a name="1010616"></a>
+<p class="BP">
+You access operating system resources using the standard core Java classes and methods. Once you access a resource, the time that it remains active (usable) varies according to the type of resource.
+</p>
+   
+<a name="1010659">
+</a><p><a name="1010659">
+<table class="Informal" border="1" frame="HSIDES" rules="GROUPS" width="100%" cellpadding="3" cellspacing="0">
+<thead>
+<tr class="Informal"><th class="Informal" align="left" valign="bottom">
+<a name="1010619"></a>
+<font face="Arial, Helvetica, sans-serif"><strong>Resource</strong></font> &nbsp;</th>
+<th class="Informal" align="left" valign="bottom">
+<a name="1010621"></a>
+<font face="Arial, Helvetica, sans-serif"><strong>Lifetime</strong></font> &nbsp;</th>
+</tr>
+</thead><tbody>
+<tr class="Informal" align="LEFT" valign="TOP"><td class="Informal">
+<a name="1010623"></a>
+<p class="TB">
+Files &nbsp;</p></td>
+<td class="Informal">
+<a name="1013769"></a>
+<p class="TB">
+The system closes all files left open when a database call ends.  &nbsp;</p></td>
+</tr>
+<tr class="Informal" align="LEFT" valign="TOP"><td class="Informal">
+<a name="1010627"></a>
+<p class="TB">
+Memory &nbsp;</p></td>
+<td class="Informal">
+<a name="1010634"></a>
+<p class="TB">
+Memory is garbage collected as described in <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/01intro3.htm#1002841">"Automated Storage Management"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/01intro3.htm#1002841"></a>. &nbsp;</p></td>
+</tr>
+<tr class="Informal" align="LEFT" valign="TOP"><td class="Informal">
+<a name="1010637"></a>
+<p class="TB">
+Threads &nbsp;</p></td>
+<td class="Informal">
+<a name="1010639"></a>
+<p class="TB">
+All threads are terminated when a call ends. &nbsp;</p></td>
+</tr>
+<tr class="Informal" align="LEFT" valign="TOP"><td class="Informal">
+<a name="1010641"></a>
+<p class="TB">
+Objects that depend on operating system resources &nbsp;</p></td>
+<td class="Informal">
+<a name="1010643"></a>
+<p class="TB">
+Regardless of the usable lifetime of the object (for example, the defined lifetime for a thread object), the Java object can be valid for the duration of the session. This can occur, for example, if the Java object is stored in a static class variable or a class variable references it directly or indirectly. If you attempt to use one of these Java objects after its usable lifetime is over, Aurora throws an exception. This is true for the following examples: 
+</p><ul class="TLB">
+
+<li class="TLB" type="DISC"><a name="1010644"></a>If an attempt is made to read from a <code>java.io.FileInputStream</code> that was closed at the end of a previous call, a <code>java.io.IOException</code> is thrown. 
+<p>
+
+</p></li><li class="TLB" type="DISC"><a name="1010645"></a><code>java.lang.Thread.isAlive()</code> is false for any Thread object running in a previous call and still accessible in a subsequent call.
+<p>
+</p></li></ul> &nbsp;</td>
+</tr>
+<tr class="Informal" align="LEFT" valign="TOP"><td class="Informal">
+<a name="1010647"></a>
+<p class="TB">
+Sockets &nbsp;</p></td>
+<td class="Informal">
+<ul class="TLB">
+
+<li class="TLB" type="DISC"><a name="1010649"></a>Sockets can exist across calls.
+<p>
+
+</p></li><li class="TLB" type="DISC"><a name="1010650"></a>ServerSockets on an MTS server terminate when the call ends.
+<p>
+
+</p></li><li class="TLB" type="DISC"><a name="1010651"></a>ServerSockets on a dedicated server can exist across calls.
+<p>
+</p></li></ul>
+<a name="1010658"></a>
+<p class="TB">
+See <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1004792">"Sockets"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1004792"></a> more information. &nbsp;</p></td>
+</tr>
+
+</tbody></table>
+
+<table class="TableNote" width="100%" cellpadding="3" cellspacing="0">
+<tbody><tr class="TableNote" align="LEFT" valign="TOP"><td class="TableNote">
+
+</td></tr>
+</tbody></table>
+
+</a>
+   
+<a name="1012160"></a>
+<!--TOC=h2-"1012160"-->
+</p><h3 class="H2"><font face="Arial, Helvetica, sans-serif" color="#330099"> Garbage Collection and Operating System Resources</font></h3>
+<!--/TOC=h2-->
+
+<a name="1012161"></a>
+<p class="BP">
+Imagine that memory is divided up into two realms: Java object memory and operating system constructs. The Java object memory realm contains all objects and variables. Operating system constructs include resources that the operating system allocates to the object when it asks. These resources include files, sockets, and so on. 
+</p>
+
+<a name="1012178"></a>
+<p class="BP">
+Basic programming rules dictate that you close all memory--both Java objects and operating system constructs. Java programmers incorrectly assume that all memory is freed by the garbage collector. The garbage collector was created to collect all unused Java object memory. However, it does not close any operating system constructs. All operating system constructs must be closed by the program before the Java object is collected.
+</p>
+
+<a name="1012179"></a>
+<p class="BP">
+For example, whenever an object opens a file, the operating system creates the file and gives the object a file handle. If the file is not closed, the operating system will hold the file handle construct open until the call ends or JVM exits. This can cause you to run out of these constructs earlier than necessary. There are a finite number of handles within each operating system. To guarantee that you do not run out of handles, close your resources before exiting the method. This includes closing the streams attached to your sockets. You should close the streams attached to the socket before closing the socket.
+</p>
+
+<a name="1012223"></a>
+<p class="BP">
+So why not expand the garbage collector to close all operating system constructs? For performance reasons, the garbage collector cannot examine each object to see if it contains a handle. Thus, the garbage collector collects Java objects and variables, but does not issue the appropriate operating system methods for freeing any handles. 
+</p>
+
+<a name="1007254"></a>
+<p class="BP">
+<a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1008008">Example  2-6</a> shows how you should close the operating system constructs.
+</p>
+
+<a name="1008008"></a>
+<h4 class="ET"><font face="Arial, Helvetica, sans-serif"><em>Example 2-6  Closing your operating system resources</em></font></h4>
+    
+<pre class="CE"><a name="1008009"></a>public static void addFile(String[] newFile) {
+<a name="1008010"></a> File inFile = new File(newFile);
+<a name="1008011"></a> FileReader in = new FileReader(inFile);
+<a name="1008012"></a> int i;
+<a name="1008013"></a>
+<a name="1008014"></a> while ((i = in.read()) != -1)
+<a name="1008015"></a>    out.write(i);
+<a name="1008016"></a><strong><code> /*closing the file, which frees up the operating system file handle*/
+</code></strong><a name="1008017"></a><strong><code> in.close();
+</code></strong><a name="1008018"></a> }
+<a name="1008023"></a>
+</pre>    
+<a name="1008003"></a>
+<p class="BP">
+If you do not close the <code>in</code> file, eventually the <code>File</code> object will be garbage collected. However, even if the <code>File</code> object is garbage collected, the operating system still believes that the file is in use, because it was not closed. 
+</p>
+   
+<a name="1007528">
+<div align="CENTER">
+<p>
+<table class="Note" border="0" width="80%" cellpadding="0" cellspacing="0">
+<tbody><tr class="Note"><td class="Note">
+<hr>
+<a name="1007531"></a><font face="Arial, Helvetica, sans-serif"><strong class="NH">Note:</strong></font>
+
+<a name="1007532"></a>
+<p class="NB">
+You might want to use Java finalizers to close resources. However, finalizers are not guaranteed to run in a timely manner. Instead, finalizers are put on a queue to execute when the garbage collector has time. If you close your resources within your finalizer, it might not be freed up until the JVM exits. The best approach is to close your resources within the method. &nbsp;
+</p><hr>
+</td>
+</tr>
+
+</tbody></table>
+
+<table class="TableNote" cellpadding="3">
+<tbody><tr class="TableNote" align="LEFT" valign="TOP"><td class="TableNote">
+
+</td></tr>
+</tbody></table>
+</p></div>
+</a>
+   
+<a name="1012248"></a>
+<!--TOC=h2-"1012248"-->
+<h3 class="H2"><font face="Arial, Helvetica, sans-serif" color="#330099"> Operating System Resources Affected Across Calls</font></h3>
+<!--/TOC=h2-->
+
+<a name="1012249"></a>
+<p class="BP">
+You should close resources that are local to a single call when the call ends. However, for static objects that hold on to operating system resources, you must be aware of how these resources are affected after the call ends.
+</p>
+
+<a name="1008156"></a>
+<p class="BP">
+The JVM automatically closes any open operating system constructs--in <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1007000">Example  2-7</a>, the file handle--when the call ends. This can affect any operating system resources within your Java object. For example, if you have a file opened within a static variable, the file handle is closed at the end of the call for you. So, if you hold on to the <code>File</code> object across calls, the next usage of the file handle throws an exception. 
+</p>
+
+<a name="1006824"></a>
+<p class="BP">
+In <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1007000">Example  2-7</a>, class <code>Concat</code> enables multiple files to be written into a single file, <code>outFile</code>. On the first call, <code>outFile</code> is created. The first input file is opened, read, input into <code>outFile</code>, and the call ends. Because <code>outFile</code> is statically defined, it is moved into session space between call invocations. However, the file handle--that is, the <code>FileDescriptor</code>--is closed at the end of the call. The next time you call <code>addFile</code>, you will get an exception. 
+</p>
+
+<a name="1007000"></a>
+<h4 class="ET"><font face="Arial, Helvetica, sans-serif"><em>Example 2-7  Compromising your operating system resources</em></font></h4>
+    
+<pre class="CE"><a name="1007001"></a>public class Concat {
+<a name="1007002"></a><strong class="Bold">  static File outFile = new File("outme.txt");
+</strong><a name="1007003"></a>  FileWriter out = new FileWriter(outFile);
+<a name="1007004"></a>
+<a name="1007005"></a>public static void addFile(String[] newFile) {
+<a name="1007006"></a> File inFile = new File(newFile);
+<a name="1007007"></a> FileReader in = new FileReader(inFile);
+<a name="1007008"></a> int i;
+<a name="1007009"></a>
+<a name="1007010"></a> while ((i = in.read()) != -1)
+<a name="1007011"></a>    out.write(i);
+<a name="1007012"></a> in.close();
+<a name="1007013"></a> }
+<a name="1007014"></a>}
+<a name="1007361"></a>
+</pre>    
+<a name="1007388"></a>
+<p class="BP">
+There is a workaround. To make sure that your handles stay valid, you should close your files, buffers, and so on, at the end of every call; reopen the resource at the beginning of the next call. Another option is to use the database, rather than using operating system resources. For example, try to use database tables, rather than a file. Or simply do not store operating system resources within static objects expected to live across calls; use operating system resources only within objects local to the call. 
+</p>
+
+<a name="1007452"></a>
+<p class="BP">
+<a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1007394">Example  2-8</a> shows how you can perform concatenation, as in <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ10.htm#1007000">Example  2-7</a>, without compromising your operating system resources. The <code>addFile</code> method opens the <code>outme.txt</code> file within each call, making sure that anything written into the file is appended to the end. At the end of each call, the file is closed. Two things occur: 
+</p>
+
+<ol class="LN1" type="1">
+
+<li class="LN1" type="1" value="1"><a name="1007460"></a>The <code>File</code> object no longer exists outside of a call.
+<p>
+
+</p></li><li class="LN1" type="1" value="2"><a name="1007461"></a>The operating system resource, the <code>outme.txt</code> file, is reopened for each call. If you had made the <code>File</code> object a static variable, the closing of <code>outme.txt</code> within each call would ensure that the operating system resource is not compromised.
+<p>
+</p></li></ol>
+
+<a name="1007394"></a>
+<h4 class="ET"><font face="Arial, Helvetica, sans-serif"><em>Example 2-8  Correctly managing your operating system resources</em></font></h4>
+    
+<pre class="CE"><a name="1007395"></a>public class Concat {
+<a name="1007398"></a>
+<a name="1007399"></a>public static void addFile(String[] newFile) {
+<a name="1007439"></a><strong><code> /*open the output file each call; make sure the input*/
+</code></strong><a name="1007449"></a><strong><code> /*file is written out to the end by making it "append=true"*/
+</code></strong><a name="1007442"></a><strong><code> FileWriter out = new FileWriter("outme.txt", TRUE); 
+</code></strong><a name="1007443"></a> File inFile = new File(newFile);
+<a name="1007401"></a> FileReader in = new FileReader(inFile);
+<a name="1007402"></a> int i;
+<a name="1007403"></a>
+<a name="1007404"></a> while ((i = in.read()) != -1)
+<a name="1007405"></a>    out.write(i);
+<a name="1007406"></a> in.close();
+<a name="1007427"></a><strong><code> /*close the output file between calls*/
+</code></strong><a name="1007426"></a><strong><code> out.close();
+</code></strong><a name="1007407"></a> }
+<a name="1007408"></a>}
+</pre>    
+<a name="1004792"></a>
+<!--TOC=h3-"1004792"-->
+<h4 class="H3"><font face="Arial, Helvetica, sans-serif" color="#330099"> Sockets</font></h4>
+<!--/TOC=h3-->
+
+<a name="1008680"></a>
+<p class="BP">
+Sockets are used in setting up a connection between a client and a server. For each database connection, sockets are used at either end of the connection. Your application does not set up the connection; the connection is set up by the underlying networking protocol: Net8's TTC or IIOP. See <a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/05confi2.htm#1004274">"Configuring JServer"</a><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/05confi2.htm#1004274"></a> for information on how to configure your connection.
+</p>
+
+<a name="1008699"></a>
+<p class="BP">
+You might also wish to set up another connection--for example, connecting to a specified URL from within one of the classes stored within the database. To do so, instantiate sockets for servicing the client and server sides of the connection. 
+</p>
+
+<ul class="LB1">
+
+<li class="LB1" type="DISC"><a name="1008746"></a>The <code>java.net.Socket()</code> constructor creates a client socket.
+<p>
+
+</p></li><li class="LB1" type="DISC"><a name="1008747"></a>The <code>java.net.ServerSocket()</code> constructor creates a server socket.
+<p>
+</p></li></ul>
+
+<a name="1008708"></a>
+<p class="BP">
+A socket exists at each end of the connection. The server-side of the connection that listens for incoming calls is serviced by a <code>ServerSocket</code>. The client-side of the connection that sends requests is serviced through a <code>Socket</code>. You can use sockets as defined within the JVM with the following restriction: a <code>ServerSocket</code> instance within an MTS server cannot exist across calls. 
+</p>
+   
+<a name="1008723">
+</a><p><a name="1008723">
+<table class="Simple" width="100%">
+<tbody><tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1008712"></a>
+<p class="TS">
+<code>Socket</code> &nbsp;</p></td>
+<td class="Simple">
+<a name="1008714"></a>
+<p class="TS">
+Because the client-side of the connection is outbound, the <code>Socket</code> instance can be serviced across calls within either an MTS or dedicated server. &nbsp;</p></td>
+</tr>
+<tr class="Simple" align="LEFT" valign="TOP"><td class="Simple">
+<a name="1008716"></a>
+<p class="TS">
+<code>ServerSocket</code> &nbsp;</p></td>
+<td class="Simple">
+<a name="1008718"></a>
+<p class="TS">
+The server-side of the connection is a listener. 
+</p><ul class="TSB">
+
+<li class="TSB" type="DISC"><a name="1008934"></a>Dedicated server--Your <code>ServerSocket</code> can listen across calls only within a dedicated server; the dedicated server exists solely for servicing the single client. 
+<p>
+
+</p></li><li class="TSB" type="DISC"><a name="1008935"></a>MTS server--The <code>ServerSocket</code> is closed at the end of a call within an MTS server; the MTS uses shared servers, which move on to another client at the end of every call. You will receive an I/O exception stating that the socket was closed if you try to use the <code>ServerSocket</code> outside of the call it was created in.
+<p>
+</p></li></ul> &nbsp;</td>
+</tr>
+
+</tbody></table>
+
+<table class="TableNote" width="100%">
+<tbody><tr class="TableNote" align="LEFT" valign="TOP"><td class="TableNote">
+
+</td></tr>
+</tbody></table>
+
+</a>
+   
+
+
+</p><hr noshade="" size="1">
+<p class="BP">
+
+
+
+<!-- Start Footer -->
+
+</p></div>
+
+<div class="OUTD">
+
+
+<hr>
+
+<table cellspacing="0" cellpadding="0" width="100%">
+<tbody><tr>
+
+<td valign="BOTTOM" width="33%">
+
+<table cellspacing="0" cellpadding="0">
+<tbody><tr>
+<td align="CENTER"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03write9.htm"><img src="./Garbage Collector OS_files/larrow.gif" alt="Go to previous page" border="0" height="30" width="40"><br><font size="-2"></font></a></td>
+<td align="CENTER"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writed.htm"><img src="./Garbage Collector OS_files/uarrow.gif" alt="Go to beginning of chapter" border="0" height="30" width="40"><br><font size="-2"></font></a></td>
+<td align="CENTER"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/03writ11.htm"><img src="./Garbage Collector OS_files/rarrow.gif" alt="Go to next page" border="0" height="30" width="40"><br><font size="-2"></font></a></td>
+</tr>
+</tbody></table>
+
+</td>
+
+
+<td align="CENTER" width="34%">
+<a href="https://docs.oracle.com/cd/A87860_01/doc/dcommon/html/cpyr.htm"><img src="./Garbage Collector OS_files/oracle.gif" alt="Oracle" border="0"><br>
+<font size="-2">Copyright © 1996-2000, Oracle Corporation.</font></a>
+<br>
+<font size="-2">All Rights Reserved.</font>
+</td>
+
+<td valign="BOTTOM" align="RIGHT" width="33%"> 
+
+<table cellspacing="0" cellpadding="0">
+<tbody><tr>
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/products.htm"><img src="./Garbage Collector OS_files/prodicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Library</font></a></td>
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/index.htm"><img src="./Garbage Collector OS_files/bookicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Product</font></a></td>
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/toc.htm"><img src="./Garbage Collector OS_files/conticon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Contents</font></a></td>
+
+<td align="CENTER" valign="TOP" width="25%"><a href="https://docs.oracle.com/cd/A87860_01/doc/java.817/a83728/index.htm"><img src="./Garbage Collector OS_files/indxicon.gif" alt="" border="0" height="30" width="30"><br>
+<font size="-2">Index</font></a></td>
+</tr>
+</tbody></table>
+
+</td>
+
+</tr>
+</tbody></table>
+
+</div>
+
+
+</body></html>
